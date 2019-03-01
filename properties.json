@@ -1,0 +1,36 @@
+{  
+   "structure":{  
+      "directory":{  
+         "name":"dir",
+         "number":2,
+         "permission":{  
+            "FileSystemAccessRights":"Modify",
+            "InheritanceFlags":"ContainerInherit, ObjectInherit",
+            "PropagationFlags":"None",
+            "AccessControl":"Allow",
+            "IdentityReference":"Administrator"
+         }
+      },
+      "subdirectory":{  
+         "name":"subdir",
+         "number":2,
+         "permission":{  
+            "FileSystemAccessRights":"Modify",
+            "InheritanceFlags":"ContainerInherit, ObjectInherit",
+            "PropagationFlags":"None",
+            "AccessControl":"Allow",
+            "IdentityReference":"Administrator"
+         }
+      },
+      "file":{  
+         "name":"file",
+         "number":10,
+         "maxSize":20000000,
+         "permission":{  
+            "FileSystemAccessRights":"Modify",
+            "AccessControl":"Allow",
+            "IdentityReference":"Administrator"
+         }
+      }
+   }
+}
