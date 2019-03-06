@@ -1,0 +1,233 @@
+import os
+import time
+from phoenix.base.stepmethod import stepmethod
+import winrm
+import sys
+
+from impacket.smbconnection import SMBConnection
+from impacket.smbconnection import SessionError
+
+# Test Steps
+@stepmethod
+def test_success(ctx):
+    ctx.log.debug("Running test success step")
+
+
+@stepmethod
+def test_error(ctx):
+    ctx.log.debug("Running test error step")
+    raise RuntimeError("This is a test step to raise error.")
+
+
+@stepmethod
+def test_timeout(ctx):
+    sleep_time=60
+    ctx.log.debug("Running test timeout step. Sleeping for {}s".format(sleep_time))
+    time.sleep(sleep_time)
+    ctx.log.debug("Finished test_timeout step")
+
+#CA related Steps
+
+
+@stepmethod
+def ca_deploy(ctx):
+    ctx.migration.ca.run()
+
+
+@stepmethod
+def ca_wait_for_deployment(ctx):
+    ctx.migration.ca.wait_for_model_to_complete()
+
+
+# Source related Steps
+
+@stepmethod
+def source_add(ctx):
+    ctx.migration.source.do()
+
+
+@stepmethod
+def source_start_collect_attributes(ctx):
+    ctx.migration.source.preflight_options['appliance_id'] = ctx.migration.ca.appliance_id
+    ctx.migration.source.preflight_options['cloud_account'] = ctx.migration.ca.cloud_account_id
+    ctx.migration.source.start_preflight()
+
+
+@stepmethod
+def source_wait_collect_attributes(ctx):
+    ctx.migration.source.wait_for_model_to_complete()
+
+
+@stepmethod
+def source_ensure_collect_attributes_success(ctx):
+    pass
+
+
+#Full Migration related Steps
+
+@stepmethod
+def full_migration_start(ctx):
+    ctx.migration.full_migration.migration_config['appliance_id'] = ctx.migration.ca.appliance_id
+    ctx.migration.full_migration.migration_config['cloud_account'] = \
+        ctx.migration.ca.cloud_account_id
+    ctx.migration.full_migration.migration_config['sources'][0]["source"] = \
+        ctx.migration.source.source_id
+    ctx.migration.full_migration.do()
+
+
+@stepmethod
+def full_migration_wait_for_completion(ctx):
+    ctx.migration.full_migration.wait_for_model_to_complete()
+
+@stepmethod
+def full_migration_update_target_ip(ctx):
+    ctx.migration.full_migration.update_target_ip()
+
+
+@stepmethod
+def full_migration_verify_migration_json(ctx):
+    pass
+
+
+@stepmethod
+def full_migration_verify_source(ctx):
+    pass
+
+
+@stepmethod
+def full_migration_verify_target(ctx):
+    pass
+
+@stepmethod
+def cleanup_source(ctx):
+    # cleanup source
+    pass
+
+
+@stepmethod
+def modify_source(ctx):
+    # inject new files to the source
+    source = ctx.migration.source.source_config
+    smbconn = SMBConnection(remoteName="*SMBSERVER",
+                            remoteHost=source["host"],
+                            sess_port=445)
+    smbconn.login(source["credentials"]["username"],
+                  source["credentials"]["password"])
+
+    #add ps1 file to create the folder structure
+    file_to_transfer = os.path.join(os.path.dirname(os.path.realpath(__file__)), "/home/phoenix/gerrit/folderStructure.ps1")
+    with open(file_to_transfer) as file_to_upload:
+        smbconn.putFile("c$", "folderStructure.ps1", file_to_upload.read)
+
+    #add JSON file to be readed to create the folder structure
+    file_to_transfer = os.path.join(os.path.dirname(os.path.realpath(__file__)), "/home/phoenix/gerrit/properties.json")
+    with open(file_to_transfer) as file_to_upload:
+        smbconn.putFile("c$", "properties.json", file_to_upload.read)
+
+    # run powershell script on the source
+    source = ctx.migration.source.source_config
+    s = winrm.Session(source["host"],
+                      auth=(source["credentials"]["username"],
+                            source["credentials"]["password"]),
+                      transport="ntlm")
+    go_to_files_folder= "cd C:\\"
+    execute_go_to_files_folder= s.run_ps(go_to_files_folder)
+    sample_power_shell="powershell.exe -File C:\\folderStructure.ps1 C:\\properties.json"
+    result = s.run_ps(sample_power_shell)
+    ctx.log.debug("stdout:{}".format(result.std_out))
+    ctx.log.debug("stderr:{}".format(result.std_err))
+    
+    #Get folder structure 
+
+    sample_power_shell = "Get-ChildItem -Path C:\ -Recurse -Force"
+    folder_content= s.run_ps(sample_power_shell)
+    ctx.log.debug("stdout:{}".format(folder_content.std_out))
+    sys.stdout=open ('/home/phoenix/gerrit/sourcelog.txt', 'w')
+
+
+@stepmethod
+def cleanup_dm_profile(ctx):
+    # cleanup DM profile
+    ctx.migration.dm_migration.cleanup_migration_profile()
+
+
+@stepmethod
+def verify_target(ctx):
+    
+    #get source folder
+
+   
+    
+    
+    # confirm that target has files from the source
+    target_ip = ctx.migration.dm_migration.dm_config["differential_configs"][0]["target_ip"]
+    source = ctx.migration.source.source_config
+    s = winrm.Session(target_ip,
+                      auth=(source["credentials"]["username"],
+                            source["credentials"]["password"]),
+                      transport="ntlm")
+    sample_power_shell = "Get-ChildItem -Path C:\ -Recurse -Force"
+    result = s.run_ps(sample_power_shell)
+    ctx.log.debug("stdout:{}".format(result.std_out))
+    sys.stdout = open('/home/phoenix/gerrit/targetlog.txt', 'w')
+
+
+
+    #Compare folders
+    compare_folder_script = "powershell.exe -File C:\\compareFolder.ps1 -computer1  'reference_folder' -computer2 'folder_target'"
+    result = s.run_ps(sample_power_shell)
+
+#DM related Steps
+@stepmethod
+def dm_create(ctx):
+    pass
+
+
+@stepmethod
+def dm_start(ctx):
+    ctx.migration.dm_migration.dm_config['appliance_id'] = ctx.migration.ca.appliance_id
+    ctx.migration.dm_migration.dm_config['differential_configs'][0]['migration'] = \
+        ctx.migration.full_migration.migration_id
+    ctx.migration.dm_migration.dm_config['differential_configs'][0]['target_ip'] = \
+        ctx.migration.full_migration.target_ip
+    ctx.migration.dm_migration.do()
+
+
+@stepmethod
+def dm_wait_for_completion(ctx):
+    ctx.migration.dm_migration.wait_for_model_to_complete()
+
+
+@stepmethod
+def dm_verify_source(ctx):
+    pass
+
+@stepmethod
+def dm_verify_target(ctx):
+    pass
+
+
+#DataOnly steps
+
+@stepmethod
+def dm_verify_target_before_dm(ctx):
+    pass
+
+@stepmethod
+def dataonly_verify_source(ctx):
+    pass
+
+@stepmethod
+def dataonly_verify_target(ctx):
+    pass
+
+
+#Source Preflight related Steps
+
+@stepmethod
+def source_verify_badcreds(ctx):
+    pass
+
+
+if __name__ == "__main__":
+    modify_source()
