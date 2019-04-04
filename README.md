@@ -1,4 +1,14 @@
-      "entitlement": "98084572-bb38-4f00-82e4-4c1f9785883b"
+
+;WVqh!K2V9?P7-GS2zgzlWIGKfF%GtLo
+
+arn:aws:iam::169496270936:role/lau-CrossAccountRoles-ET94G0TUWVDQ
+
+	
+02551538-665b-4d0b-b144-c947ae22cbfd
+
+
+
+"entitlement": "98084572-bb38-4f00-82e4-4c1f9785883b"
 
 
 {
