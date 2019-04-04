@@ -6,7 +6,8 @@ arn:aws:iam::169496270936:role/lau-CrossAccountRoles-ET94G0TUWVDQ
 	
 02551538-665b-4d0b-b144-c947ae22cbfd
 
-
+Network: vpc-0770200073c8c1fc5 | Sources and Targets
+Subnet: subnet-0856052b7c515a9b6 | targets02-private | us-east-2b
 
 "entitlement": "98084572-bb38-4f00-82e4-4c1f9785883b"
 
