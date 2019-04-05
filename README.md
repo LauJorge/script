@@ -2,6 +2,7 @@
 ;WVqh!K2V9?P7-GS2zgzlWIGKfF%GtLo
 
 arn:aws:iam::169496270936:role/lau-CrossAccountRoles-ET94G0TUWVDQ
+            "id": "b32e0b3e-fe35-4fbc-aae1-e580728000d3",
 
 	
 02551538-665b-4d0b-b144-c947ae22cbfd
