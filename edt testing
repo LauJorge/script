@@ -1,0 +1,20 @@
+Features
+
+File with maximum length name
+
+Folder structure with maximum length path
+
+Folders and files timestamps, acls, hashtags validations
+
+Unicode characters
+
+VSS snapshot removal
+
+Code refactor:
+
+Method to mange files injections
+
+Method to mange connections to source and target
+
+Method to mange logs files for assertions
+
