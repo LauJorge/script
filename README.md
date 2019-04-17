@@ -261,3 +261,5 @@ sg-001705b7f25b47317
     "TEMPLATE_NAME": "../templates/windows-aws-full-dm.json",
     "TEST_BED": ""
 }
+
+            "id": "22ca882c-820e-4ec9-b2e3-fc915b2f6652",
