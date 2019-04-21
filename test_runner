@@ -1,0 +1,28 @@
+-whoami output phoenix
+2-In python console run 
+	2.a)import os
+	2.b)os.path.expanduser('~')
+        output home/phoenix/
+3-Create test_runner_profile.yaml in home/phoenix/
+	3-a test_runner_profile.yaml content should be 
+		unique_prefix: "ASH-2-"
+
+4-remove sim link  sudo rm /usr/bin/python ( this is to remove the link to the previous python version)
+5-create new link ln -s /usr/bin/python2.7 /usr/bin/python
+6-Install pip if it's necessary
+	6-a) curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py"
+	6-b) python get-pip.py
+				
+7- run python test_runner.py --help
+	install each required module
+8- run python test_runner.py --include-clouds aws_ca --entitlements "entitlement ID" --front-end-url http:\\pib01.qa-auto1.rmsvcs.net --dry-run True
+		The output will be an tmp/automation.json file which will contain all the data to perform the migration
+		You should see the prefix created in the step 3 in the file
+		If everything is OK, proceed to the next step. 
+9- run python test_runner.py --include-clouds aws_ca --entitlements "entitlement ID" --front-end-url http:\\pib01.qa-auto1.rmsvcs.net
+		This command will start a new migration reading the data from the automation.json file
+
+
+Extra
+If after change the default python version, is not possible to perform a git review when you are trying to push your code, do the following: 
+Fix git review = pip install git-review
